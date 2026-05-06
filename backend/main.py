@@ -1,7 +1,7 @@
 # TutorIA Web V24 — Backend FastAPI
 from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os, logging
@@ -22,7 +22,7 @@ app = FastAPI(title="TutorIA API V24")
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv("ALLOWED_ORIGINS","http://localhost:5173").split(","), allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class ChatRequest(BaseModel):
