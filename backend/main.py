@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("tutor-ia")
 
 SUPA_URL = os.getenv("SUPABASE_URL")
-SUPA_KEY = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
+SUPA_KEY = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_ANON_KEY")
 DB_URL = os.getenv("SUPABASE_DB_URL", "https://nligaklqiywmntufjynh.supabase.co")
 DB_KEY = os.getenv("SUPABASE_DB_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
 
