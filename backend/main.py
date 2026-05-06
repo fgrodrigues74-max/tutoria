@@ -32,9 +32,11 @@ class Chat(BaseModel):
 async def auth(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(401, "Token invalido")
+    token = authorization.split(" ")[1]
     try:
-        u = supabase.auth.get_user(authorization.split(" ")[1])
-        p = supabase.table("usuarios").select("*").eq("id", u.user.id).single().execute()
+        svc: Client = create_client(SUPA_URL, os.getenv("SUPABASE_SERVICE_KEY"))
+        u = svc.auth.get_user(token)
+        p = svc.table("usuarios").select("*").eq("id", u.user.id).single().execute()
         return p.data
     except:
         raise HTTPException(401, "Nao autorizado")
