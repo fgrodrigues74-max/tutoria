@@ -45,12 +45,17 @@ def health(): return {"status":"ok","version":"2.0.0","sistema":"TutorIA V24"}
 @app.post("/auth/login")
 async def login(req: Login):
     try:
-        res = supabase.auth.sign_in_with_password({"email":req.email,"password":req.password})
-        uid = res.user.id
+        async with httpx.AsyncClient() as c:
+            res = await c.post(f"{SUPA_URL}/auth/v1/token?grant_type=password",headers={"apikey":SUPA_KEY,"Content-Type":"application/json"},json={"email":req.email,"password":req.password},timeout=10)
+        if res.status_code != 200:
+            raise Exception(f"Auth failed: {res.text}")
+        data = res.json()
+        uid = data["user"]["id"]
+        token = data["access_token"]
         perfil = supabase.table("usuarios").select("*,permissoes(modulo_slug,nivel)").eq("id",uid).single().execute()
         try: supabase.table("log_acessos").insert({"usuario_id":uid,"ip":"web","acao":"login"}).execute()
         except: pass
-        return {"access_token":res.session.access_token,"usuario":perfil.data}
+        return {"access_token":token,"usuario":perfil.data}
     except Exception as e:
         log.error(f"Login error: {e}")
         raise HTTPException(401, "Email ou senha incorretos")
