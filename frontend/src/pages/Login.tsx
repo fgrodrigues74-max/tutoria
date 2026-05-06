@@ -1,23 +1,19 @@
 import { useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
-
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setError(""); setLoading(true)
     try {
       await login(email, password)
-      window.location.href = "/"
-    } catch {
-      setError("Email ou senha incorretos")
-    } finally { setLoading(false) }
+      setTimeout(() => { window.location.href = "/" }, 300)
+    } catch { setError("Email ou senha incorretos") }
+    finally { setLoading(false) }
   }
-
   return (
     <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0f1117 0%,#1a1d2e 50%,#0f1117 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"1.5rem",fontFamily:"sans-serif"}}>
       <div style={{width:"100%",maxWidth:"400px"}}>
