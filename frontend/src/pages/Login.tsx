@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 
 export default function Login() {
@@ -8,20 +7,15 @@ export default function Login() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
-  const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault(); setError(""); setLoading(true)
     try {
       await login(email, password)
-      navigate("/")
+      window.location.href = "/"
     } catch {
       setError("Email ou senha incorretos")
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   return (
@@ -39,13 +33,13 @@ export default function Login() {
           <form onSubmit={handleSubmit}>
             <div style={{marginBottom:"1rem"}}>
               <label style={{display:"block",fontSize:"13px",color:"#9ca3af",marginBottom:"6px"}}>Email</label>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="seu@email.com" required style={{width:"100%",padding:"10px 14px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#e8e6e1",fontSize:"14px",outline:"none",boxSizing:"border-box"}} />
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required style={{width:"100%",padding:"10px 14px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#e8e6e1",fontSize:"14px",outline:"none",boxSizing:"border-box"}} />
             </div>
             <div style={{marginBottom:"1.5rem"}}>
               <label style={{display:"block",fontSize:"13px",color:"#9ca3af",marginBottom:"6px"}}>Senha</label>
-              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="..." required style={{width:"100%",padding:"10px 14px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#e8e6e1",fontSize:"14px",outline:"none",boxSizing:"border-box"}} />
+              <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required style={{width:"100%",padding:"10px 14px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:"10px",color:"#e8e6e1",fontSize:"14px",outline:"none",boxSizing:"border-box"}} />
             </div>
-            {error && <div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:"8px",padding:"10px 12px",color:"#f87171",fontSize:"13px",marginBottom:"1rem"}}>{error}</div>}
+            {error && <div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:"8px",padding:"10px",color:"#f87171",fontSize:"13px",marginBottom:"1rem"}}>{error}</div>}
             <button type="submit" disabled={loading} style={{width:"100%",padding:"11px",background:loading?"rgba(99,102,241,0.5)":"linear-gradient(135deg,#6366f1,#8b5cf6)",border:"none",borderRadius:"10px",color:"white",fontSize:"14px",fontWeight:500,cursor:loading?"not-allowed":"pointer"}}>
               {loading ? "Entrando..." : "Entrar"}
             </button>
