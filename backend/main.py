@@ -52,7 +52,8 @@ async def login(req: Login):
         data = res.json()
         uid = data["user"]["id"]
         token = data["access_token"]
-        perfil = supabase.table("usuarios").select("*,permissoes(modulo_slug,nivel)").eq("id",uid).single().execute()
+        svc: Client = create_client(SUPA_URL, os.getenv("SUPABASE_SERVICE_KEY"))
+        perfil = svc.table("usuarios").select("*,permissoes(modulo_slug,nivel)").eq("id",uid).single().execute()
         try: supabase.table("log_acessos").insert({"usuario_id":uid,"ip":"web","acao":"login"}).execute()
         except: pass
         return {"access_token":token,"usuario":perfil.data}
