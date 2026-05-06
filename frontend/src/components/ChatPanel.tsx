@@ -35,7 +35,7 @@ export default function ChatPanel({ onClose }: { onClose:()=>void }) {
       </div>
       <div style={{padding:"8px 10px",borderTop:"0.5px solid rgba(255,255,255,0.06)",display:"flex",gap:8}}>
         <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}}} placeholder="Pergunte algo..." rows={2} style={{flex:1,background:"rgba(255,255,255,0.06)",border:"0.5px solid rgba(255,255,255,0.1)",borderRadius:7,color:"#e8e6e1",fontSize:13,padding:"6px 9px",resize:"none",outline:"none",fontFamily:"sans-serif"}}/>
-        <button onClick={send} disabled={loading} style={{padding:"0 12px",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",border:"none",borderRadius:7,color:"#fff",cursor:"pointer",fontSize:15}}>-></button>
+        <button onClick={send} disabled={loading} style={{padding:"0 12px",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",border:"none",borderRadius:7,color:"#fff",cursor:"pointer",fontSize:15}}>Enviar</button>
       </div>
     </div>
   )
