@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+﻿import { useState, useRef, useEffect } from "react"
 const API = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000"
 interface Msg { role:"user"|"assistant"; content:string }
 export default function ChatPanel({ onClose }: { onClose:()=>void }) {
@@ -12,7 +12,7 @@ export default function ChatPanel({ onClose }: { onClose:()=>void }) {
     const txt = input.trim(); setInput(""); setMsgs(m=>[...m,{role:"user",content:txt}]); setLoading(true)
     try {
       const token = localStorage.getItem("token")
-      const res = await fetch(`${API}/chat`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({mensagem:txt,historico:msgs.slice(-6)})})
+      const res = await fetch(`${API}/chat`,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({mensagem:txt,historico:msgs.slice(1).filter(function(m){return m.role==="user"}).slice(-4)})})
       const data = await res.json()
       setMsgs(m=>[...m,{role:"assistant",content:data.resposta||"Erro na resposta."}])
     } catch { setMsgs(m=>[...m,{role:"assistant",content:"Erro de conexao."}]) }
