@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Header
+﻿from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
@@ -42,10 +42,15 @@ def dbq(table, select="*", order=None, desc=False, limit=None):
 async def auth(authorization: str = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Token invalido")
+    token = authorization.split(" ")[1]
     try:
+        async with httpx.AsyncClient() as c:
+            r = await c.get(SUPA_URL + "/auth/v1/user", headers={"apikey": SUPA_KEY, "Authorization": "Bearer " + token}, timeout=10)
+        if r.status_code != 200:
+            raise Exception("Invalid token")
+        uid = r.json()["id"]
         svc = create_client(SUPA_URL, SVC_KEY)
-        u = svc.auth.get_user(authorization.split(" ")[1])
-        p = svc.table("usuarios").select("*").eq("id", u.user.id).single().execute()
+        p = svc.table("usuarios").select("*").eq("id", uid).single().execute()
         return p.data
     except Exception:
         raise HTTPException(status_code=401, detail="Nao autorizado")
