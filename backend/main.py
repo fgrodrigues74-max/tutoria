@@ -1,7 +1,6 @@
 ﻿from fastapi import FastAPI, Depends, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from supabase import create_client, Client
 from dotenv import load_dotenv
 import os, logging, httpx
 
@@ -14,7 +13,6 @@ SUPA_KEY = os.getenv("SUPABASE_ANON_KEY")
 SVC_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 DB_URL = os.getenv("SUPABASE_DB_URL", "https://nligaklqiywmntufjynh.supabase.co")
 DB_KEY = os.getenv("SUPABASE_DB_KEY")
-supabase: Client = create_client(SUPA_URL, SUPA_KEY)
 app = FastAPI(title="TutorIA V24")
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(","), allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
@@ -44,14 +42,17 @@ async def auth(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Token invalido")
     token = authorization.split(" ")[1]
     try:
+        svc_h = {"apikey": SVC_KEY, "Authorization": "Bearer " + SVC_KEY, "Accept": "application/json"}
         async with httpx.AsyncClient() as c:
             r = await c.get(SUPA_URL + "/auth/v1/user", headers={"apikey": SUPA_KEY, "Authorization": "Bearer " + token}, timeout=10)
-        if r.status_code != 200:
-            raise Exception("Invalid token")
-        uid = r.json()["id"]
-        svc = create_client(SUPA_URL, SVC_KEY)
-        p = svc.table("usuarios").select("*").eq("id", uid).single().execute()
-        return p.data
+            if r.status_code != 200:
+                raise Exception("Invalid token")
+            uid = r.json()["id"]
+            p = await c.get(SUPA_URL + "/rest/v1/usuarios?select=*&id=eq." + uid, headers=svc_h, timeout=10)
+        rows = p.json()
+        if not rows:
+            raise Exception("User not found")
+        return rows[0]
     except Exception:
         raise HTTPException(status_code=401, detail="Nao autorizado")
 
@@ -62,20 +63,22 @@ def health():
 @app.post("/auth/login")
 async def login(req: Login):
     try:
+        svc_h = {"apikey": SVC_KEY, "Authorization": "Bearer " + SVC_KEY, "Accept": "application/json", "Content-Type": "application/json"}
         async with httpx.AsyncClient() as c:
             res = await c.post(SUPA_URL + "/auth/v1/token?grant_type=password", headers={"apikey": SUPA_KEY, "Content-Type": "application/json"}, json={"email": req.email, "password": req.password}, timeout=10)
-        if res.status_code != 200:
-            raise Exception("Auth failed")
-        data = res.json()
-        uid = data["user"]["id"]
-        token = data["access_token"]
-        svc = create_client(SUPA_URL, SVC_KEY)
-        perfil = svc.table("usuarios").select("*").eq("id", uid).single().execute()
-        try:
-            svc.table("log_acessos").insert({"usuario_id": uid, "ip": "web", "acao": "login"}).execute()
-        except Exception:
-            pass
-        return {"access_token": token, "usuario": perfil.data}
+            if res.status_code != 200:
+                raise Exception("Auth failed")
+            data = res.json()
+            uid = data["user"]["id"]
+            token = data["access_token"]
+            perfil_r = await c.get(SUPA_URL + "/rest/v1/usuarios?select=*&id=eq." + uid, headers=svc_h, timeout=10)
+            perfil_rows = perfil_r.json()
+            perfil = perfil_rows[0] if perfil_rows else {}
+            try:
+                await c.post(SUPA_URL + "/rest/v1/log_acessos", headers=svc_h, json={"usuario_id": uid, "ip": "web", "acao": "login"}, timeout=10)
+            except Exception:
+                pass
+        return {"access_token": token, "usuario": perfil}
     except Exception as e:
         log.error("Login: " + str(e))
         raise HTTPException(status_code=401, detail="Email ou senha incorretos")
