@@ -20,10 +20,6 @@ class Login(BaseModel):
     email: str
     password: str
 
-class Chat(BaseModel):
-    mensagem: str
-    historico: list = []
-
 def dbq(table, select="*", order=None, desc=False, limit=None):
     params = "select=" + select
     if order:
@@ -141,24 +137,4 @@ async def leituras(limite: int = 30, user=Depends(auth)):
         r = dbq("biblia_leituras", "*", "data_leitura", True, limite)
         return {"leituras": r, "total": len(r)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/chat")
-async def chat(req: Chat, user=Depends(auth)):
-    try:
-        KEY = os.getenv("ANTHROPIC_API_KEY")
-        fin = dbq("financeiro_lancamentos", "valor")
-        saldo = round(sum(r["valor"] for r in fin), 2) if fin else 0
-        obras_d = dbq("obras", "id")
-        leit_d = dbq("biblia_leituras", "id")
-        nome = user.get("nome", "Fabiano")
-        ctx = "Assistente TutorIA de " + nome + ". Saldo R$" + str(saldo) + ". Obras: " + str(len(obras_d)) + ". Leituras: " + str(len(leit_d)) + ". Responda em portugues."
-        hist = [{"role": m["role"], "content": m["content"]} for m in req.historico[-6:]]
-        hist.append({"role": "user", "content": req.mensagem})
-        async with httpx.AsyncClient() as c:
-            res = await c.post("https://api.anthropic.com/v1/messages", headers={"x-api-key": KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"}, json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1024, "system": ctx, "messages": hist}, timeout=30)
-        data = res.json()
-        return {"resposta": data["content"][0]["text"] if data.get("content") else "Erro."}
-    except Exception as e:
-        log.error("Chat: " + str(e))
         raise HTTPException(status_code=500, detail=str(e))

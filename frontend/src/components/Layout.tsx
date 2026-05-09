@@ -1,7 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
-import { useState } from "react"
 import { useAuth } from "../contexts/AuthContext"
-import ChatPanel from "./ChatPanel"
 const NAV = [
   { path:"/", icon:"#", label:"Dashboard" },
   { path:"/financeiro", icon:"$", label:"Financeiro" },
@@ -16,7 +14,6 @@ export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const loc = useLocation()
-  const [chat, setChat] = useState(false)
   const [col, setCol] = useState(false)
   function handleLogout() { logout(); navigate("/login") }
   return (
@@ -47,12 +44,10 @@ export default function Layout() {
           <h1 style={{margin:0,fontSize:14,fontWeight:500,color:"#e8e6e1"}}>{NAV.find(n=>n.path===loc.pathname)?.label||"TutorIA"}</h1>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <span style={{fontSize:12,color:"rgba(255,255,255,0.4)"}}>Ola, {user?.nome}</span>
-            <button onClick={()=>setChat(!chat)} style={{padding:"5px 12px",background:chat?"rgba(99,102,241,0.25)":"rgba(99,102,241,0.1)",border:"0.5px solid rgba(99,102,241,0.4)",borderRadius:16,color:"#a5b4fc",fontSize:12,cursor:"pointer"}}>{chat?"Fechar Claude":"Claude"}</button>
           </div>
         </div>
         <div style={{flex:1,display:"flex",overflow:"hidden"}}>
           <div style={{flex:1,overflowY:"auto",padding:18}}><Outlet /></div>
-          {chat&&<ChatPanel onClose={()=>setChat(false)} />}
         </div>
       </div>
     </div>
