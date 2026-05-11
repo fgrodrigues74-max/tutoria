@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sistema de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:#f0ebe0;color:#1a1a14}
+
+.layout{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:240px;flex-shrink:0;background:#fff;border-right:1px solid #e8e3d8;display:flex;flex-direction:column;overflow-y:auto;position:relative;z-index:10}
+.sidebar-brand{padding:22px 20px 18px;border-bottom:1px solid #f0ebe8;display:flex;align-items:center;gap:10px}
+.brand-icon{width:34px;height:34px;background:#e85020;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-name{font-size:14px;font-weight:700;color:#1a1a14;line-height:1.25}
+.brand-sub{font-size:9px;color:#aaa;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.nav-section{padding:16px 0 6px}
+.nav-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#c0b8b0;padding:0 20px;margin-bottom:4px;display:block}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 20px;cursor:pointer;border-left:2.5px solid transparent;transition:all .12s;color:#666;font-size:13px;font-weight:500;user-select:none}
+.nav-item:hover{background:#faf7f4;color:#1a1a14;border-left-color:#f0c0a8}
+.nav-item.active{border-left-color:#e85020;background:#fdf4f1;color:#e85020;font-weight:600}
+.nav-num{font-size:10px;font-weight:700;color:#ccc;width:18px;flex-shrink:0}
+.nav-item.active .nav-num{color:#e85020}
+.nav-icon{font-size:14px;flex-shrink:0;width:18px;text-align:center}
+.nav-divider{height:1px;background:#f5f0ec;margin:6px 20px}
+.sidebar-footer{margin-top:auto;padding:14px 20px;border-top:1px solid #f0ebe8}
+.user-row{display:flex;align-items:center;gap:10px}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:#e85020;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:#333}
+.user-role{font-size:10px;color:#aaa}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:3px;background:linear-gradient(90deg,#e85020,#f59e0b);flex-shrink:0}
+.page-header{padding:24px 36px 18px;border-bottom:1px solid #e8e3d8;background:#fff;flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between}
+.page-header-left{}
+.page-breadcrumb{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#e85020;font-weight:700;margin-bottom:5px}
+.page-title{font-size:28px;font-weight:700;color:#1a1a14;line-height:1.1}
+.page-subtitle{font-size:12px;color:#999;margin-top:3px}
+.page-actions{display:flex;gap:8px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:28px 36px}
+.page{display:none}.page.active{display:block}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .12s;white-space:nowrap}
+.btn-primary{background:#e85020;color:#fff}.btn-primary:hover{background:#cc4418}
+.btn-outline{background:#fff;border:1.5px solid #e0dbd4;color:#555}.btn-outline:hover{border-color:#e85020;color:#e85020}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.kpi-card{background:#fff;border:1px solid #e8e3d8;border-radius:10px;padding:18px;transition:box-shadow .15s}
+.kpi-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.07)}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#bbb;margin-bottom:7px}
+.kpi-value{font-size:26px;font-weight:700;color:#1a1a14;line-height:1}
+.kpi-change{font-size:11px;margin-top:5px;font-weight:500}
+.up{color:#1e8c50}.warn{color:#e85020}.neutral{color:#888}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.search-box{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e0dbd4;border-radius:8px;padding:9px 13px}
+.search-box input{border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;background:transparent;flex:1;color:#1a1a14}
+.search-box input::placeholder{color:#ccc}
+
+/* TABLE */
+.table-wrap{background:#fff;border:1px solid #e8e3d8;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#bbb;padding:12px 18px;text-align:left;border-bottom:1px solid #f0ebe8;background:#fdfaf8}
+td{padding:13px 18px;font-size:13px;color:#333;border-bottom:1px solid #f8f4f0}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fdf8f5}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.b-green{background:#d1fae5;color:#065f46}
+.b-amber{background:#fef3c7;color:#92400e}
+.b-blue{background:#dbeafe;color:#1e40af}
+.b-gray{background:#f3f4f6;color:#6b7280}
+.b-red{background:#fee2e2;color:#991b1b}
+.b-orange{background:#ffedd5;color:#c2410c}
+
+/* SECTION TITLE */
+.sec-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-bottom:14px;margin-top:24px}
+.sec-title:first-child{margin-top:0}
+
+/* MODULES GRID (dashboard) */
+.mod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mod-btn{background:#fff;border:1.5px solid #e8e3d8;border-radius:10px;padding:18px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;transition:all .13s;text-align:left}
+.mod-btn:hover{border-color:#e85020;box-shadow:0 4px 14px rgba(232,80,32,.1);transform:translateY(-1px)}
+.mod-btn-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.mod-btn-name{font-size:13px;font-weight:700;color:#1a1a14;margin-bottom:2px}
+.mod-btn-desc{font-size:11px;color:#999;line-height:1.4}
+
+/* FORM */
+.form-card{background:#fff;border:1px solid #e8e3d8;border-radius:10px;padding:24px;margin-bottom:16px}
+.form-card-title{font-size:14px;font-weight:700;color:#1a1a14;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #f0ebe8}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#aaa}
+.inp{border:1.5px solid #e0dbd4;border-radius:7px;padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:#1a1a14;background:#fff;outline:none;transition:border .12s;width:100%}
+.inp:focus{border-color:#e85020}
+.inp::placeholder{color:#ccc}
+textarea.inp{resize:vertical;min-height:72px}
+
+/* PLACEHOLDER */
+.placeholder-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:380px;text-align:center}
+.placeholder-icon{font-size:56px;margin-bottom:14px;opacity:.25}
+.placeholder-title{font-size:18px;font-weight:700;color:#1a1a14;margin-bottom:6px}
+.placeholder-desc{font-size:13px;color:#999;max-width:380px;line-height:1.6;margin-bottom:20px}
+
+/* ORÇAMENTO IFRAME */
+.orc-frame{background:#fff;border:1px solid #e8e3d8;border-radius:10px;overflow:hidden;height:calc(100vh - 190px)}
+.orc-frame iframe{width:100%;height:100%;border:none}
+
+/* MONTAGEM */
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.team-card{background:#fff;border:1px solid #e8e3d8;border-radius:10px;overflow:hidden}
+.team-hdr{padding:14px 18px;border-bottom:1px solid #f0ebe8;display:flex;align-items:center;justify-content:space-between}
+.team-title{font-size:14px;font-weight:700}
+.team-body{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.job-card{border:1px solid #f0ebe8;border-radius:8px;padding:12px}
+.job-name{font-size:13px;font-weight:600;color:#1a1a14;margin-bottom:2px}
+.job-info{font-size:11px;color:#999}
+.job-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.status-dot{font-size:11px;font-weight:600}
+.empty-slot{border:1.5px dashed #e8e3d8;border-radius:8px;padding:14px;text-align:center;color:#ccc;font-size:12px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,26,20,.45);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:580px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.18)}
+.modal-hdr{padding:22px 26px 18px;border-bottom:1px solid #f0ebe8;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:17px;font-weight:700;color:#1a1a14}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;padding:4px 8px}
+.modal-close:hover{color:#e85020}
+.modal-body{padding:22px 26px}
+.modal-footer{padding:14px 26px 22px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #f0ebe8}
+
+/* TABS (orçamentos) */
+.tab-row{display:flex;background:#fff;border:1px solid #e0dbd4;border-radius:8px;overflow:hidden;padding:3px;gap:2px}
+.tab-btn{padding:8px 18px;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .12s;background:transparent;color:#888}
+.tab-btn.active{background:#e85020;color:#fff}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:#1a1a14;color:#fff;padding:13px 18px;border-radius:9px;font-size:13px;font-weight:500;z-index:9999;display:none;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.toast.show{display:flex}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">Sistema de Gestão</div>
+      <div class="brand-sub">Puro Design</div>
+    </div>
+  </div>
+
+  <nav style="flex:1">
+    <div class="nav-section">
+      <span class="nav-label">Início</span>
+      <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">
+        <span class="nav-num">—</span><span class="nav-icon">📊</span><span>Dashboard</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+      <span class="nav-label">Módulos</span>
+      <div class="nav-item" id="nav-clientes" onclick="showPage('clientes')">
+        <span class="nav-num">01</span><span class="nav-icon">👥</span><span>Clientes</span>
+      </div>
+      <div class="nav-item" id="nav-orcamentos" onclick="showPage('orcamentos')">
+        <span class="nav-num">02</span><span class="nav-icon">📋</span><span>Orçamentos</span>
+      </div>
+      <div class="nav-item" id="nav-projetos" onclick="showPage('projetos')">
+        <span class="nav-num">03</span><span class="nav-icon">📁</span><span>Projetos</span>
+      </div>
+      <div class="nav-item" id="nav-cronograma" onclick="showPage('cronograma')">
+        <span class="nav-num">04</span><span class="nav-icon">📅</span><span>Cronograma Geral</span>
+      </div>
+      <div class="nav-item" id="nav-producao" onclick="showPage('producao')">
+        <span class="nav-num">05</span><span class="nav-icon">🏭</span><span>Produção</span>
+      </div>
+      <div class="nav-item" id="nav-montagem" onclick="showPage('montagem')">
+        <span class="nav-num">06</span><span class="nav-icon">🔧</span><span>Montagem</span>
+      </div>
+      <div class="nav-item" id="nav-manutencao" onclick="showPage('manutencao')">
+        <span class="nav-num">07</span><span class="nav-icon">🛠️</span><span>Manutenção</span>
+      </div>
+      <div class="nav-item" id="nav-posvendas" onclick="showPage('posvendas')">
+        <span class="nav-num">08</span><span class="nav-icon">⭐</span><span>Pós-vendas</span>
+      </div>
+      <div class="nav-item" id="nav-financeiro" onclick="showPage('financeiro')">
+        <span class="nav-num">09</span><span class="nav-icon">💰</span><span>Financeiro</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-section">
+      <span class="nav-label">Sistema</span>
+      <div class="nav-item" id="nav-config" onclick="showPage('config')">
+        <span class="nav-num">—</span><span class="nav-icon">⚙️</span><span>Configurações</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="user-avatar">F</div>
+      <div><div class="user-name">Fabiano</div><div class="user-role">Administrador</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+  <div class="topbar"></div>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="page-breadcrumb" id="hdr-bc">SISTEMA · INÍCIO</div>
+      <div class="page-title" id="hdr-title">Dashboard</div>
+      <div class="page-subtitle" id="hdr-sub">Visão geral de todos os módulos</div>
+    </div>
+    <div class="page-actions" id="hdr-actions"></div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div id="page-dashboard" class="page active">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Clientes Ativos</div><div class="kpi-value">48</div><div class="kpi-change up">↑ +3 este mês</div></div>
+        <div class="kpi-card"><div class="kpi-label">Orçamentos Abertos</div><div class="kpi-value">12</div><div class="kpi-change warn">4 aguardando resposta</div></div>
+        <div class="kpi-card"><div class="kpi-label">Projetos em Andamento</div><div class="kpi-value">7</div><div class="kpi-change up">↑ 2 concluídos</div></div>
+        <div class="kpi-card"><div class="kpi-label">Montagens Agendadas</div><div class="kpi-value">5</div><div class="kpi-change warn">⚠ 1 com atraso</div></div>
+      </div>
+      <div class="sec-title">Acesso Rápido</div>
+      <div class="mod-grid">
+        <div class="mod-btn" onclick="showPage('clientes')"><div class="mod-btn-icon">👥</div><div><div class="mod-btn-name">Clientes</div><div class="mod-btn-desc">Cadastro e histórico</div></div></div>
+        <div class="mod-btn" onclick="showPage('orcamentos')"><div class="mod-btn-icon">📋</div><div><div class="mod-btn-name">Orçamentos</div><div class="mod-btn-desc">Criar e gerenciar propostas</div></div></div>
+        <div class="mod-btn" onclick="showPage('projetos')"><div class="mod-btn-icon">📁</div><div><div class="mod-btn-name">Projetos</div><div class="mod-btn-desc">Controle de projetos</div></div></div>
+        <div class="mod-btn" onclick="showPage('cronograma')"><div class="mod-btn-icon">📅</div><div><div class="mod-btn-name">Cronograma Geral</div><div class="mod-btn-desc">Prazos de todos os projetos</div></div></div>
+        <div class="mod-btn" onclick="showPage('producao')"><div class="mod-btn-icon">🏭</div><div><div class="mod-btn-name">Produção</div><div class="mod-btn-desc">Cronograma de fábrica</div></div></div>
+        <div class="mod-btn" onclick="showPage('montagem')"><div class="mod-btn-icon">🔧</div><div><div class="mod-btn-name">Montagem</div><div class="mod-btn-desc">Equipe 1 e Equipe 2</div></div></div>
+        <div class="mod-btn" onclick="showPage('manutencao')"><div class="mod-btn-icon">🛠️</div><div><div class="mod-btn-name">Manutenção</div><div class="mod-btn-desc">Ordens de serviço</div></div></div>
+        <div class="mod-btn" onclick="showPage('posvendas')"><div class="mod-btn-icon">⭐</div><div><div class="mod-btn-name">Pós-vendas</div><div class="mod-btn-desc">NPS e satisfação</div></div></div>
+        <div class="mod-btn" onclick="showPage('financeiro')"><div class="mod-btn-icon">💰</div><div><div class="mod-btn-name">Financeiro</div><div class="mod-btn-desc">Fluxo de caixa e DRE</div></div></div>
+      </div>
+    </div>
+
+    <!-- ══ CLIENTES ══ -->
+    <div id="page-clientes" class="page">
+      <div class="toolbar">
+        <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Buscar por nome, CPF ou telefone..."/></div>
+        <button class="btn btn-primary" onclick="abrirModal('modal-cliente')">+ Novo Cliente</button>
+        <button class="btn btn-outline">⬇ Exportar</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Projetos</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div style="font-weight:600;color:#1a1a14">Ana Paula Ribeiro</div><div style="font-size:11px;color:#aaa">ana@email.com</div></td><td>(11) 99999-0001</td><td>São Paulo, SP</td><td><span class="badge b-blue">2 projetos</span></td><td><span class="badge b-green">Ativo</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+            <tr><td><div style="font-weight:600;color:#1a1a14">Carlos Eduardo Lima</div><div style="font-size:11px;color:#aaa">carlos@email.com</div></td><td>(11) 99999-0002</td><td>Campinas, SP</td><td><span class="badge b-blue">1 projeto</span></td><td><span class="badge b-amber">Negociação</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+            <tr><td><div style="font-weight:600;color:#1a1a14">Mariana Souza Costa</div><div style="font-size:11px;color:#aaa">mariana@email.com</div></td><td>(11) 99999-0003</td><td>Santos, SP</td><td><span class="badge b-gray">Sem projeto</span></td><td><span class="badge b-green">Ativo</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+            <tr><td><div style="font-weight:600;color:#1a1a14">Roberto Mendes</div><div style="font-size:11px;color:#aaa">roberto@email.com</div></td><td>(11) 99999-0004</td><td>São Paulo, SP</td><td><span class="badge b-blue">1 projeto</span></td><td><span class="badge b-green">Ativo</span></td><td><button class="btn btn-outline btn-sm">Ver</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ ORÇAMENTOS ══ -->
+    <div id="page-orcamentos" class="page">
+      <div class="toolbar">
+        <div class="tab-row">
+          <button class="tab-btn active" id="orc-tab-lista" onclick="orcView('lista')">📄 Lista</button>
+          <button class="tab-btn" id="orc-tab-calc" onclick="orcView('calc')">🧮 Calculadora</button>
+        </div>
+        <button class="btn btn-primary" onclick="orcView('calc')">+ Novo Orçamento</button>
+        <button class="btn btn-outline">⬇ Exportar</button>
+      </div>
+
+      <div id="orc-lista">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nº</th><th>Cliente</th><th>Valor Final</th><th>Lucro</th><th>Forma Pgto</th><th>Status</th><th>Data</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><b style="color:#e85020">#2025-001</b></td><td>Ana Paula Ribeiro</td><td style="font-weight:700">R$ 48.500</td><td><span style="color:#1e8c50;font-weight:700">32%</span></td><td style="font-size:12px">Cartão 12x</td><td><span class="badge b-green">Aprovado</span></td><td style="color:#aaa;font-size:12px">10/04/25</td><td><button class="btn btn-outline btn-sm" onclick="orcView('calc')">Abrir</button></td></tr>
+              <tr><td><b style="color:#e85020">#2025-002</b></td><td>Carlos Eduardo Lima</td><td style="font-weight:700">R$ 32.000</td><td><span style="color:#c07820;font-weight:700">18%</span></td><td style="font-size:12px">Boleto 6x</td><td><span class="badge b-amber">Aguardando</span></td><td style="color:#aaa;font-size:12px">15/04/25</td><td><button class="btn btn-outline btn-sm" onclick="orcView('calc')">Abrir</button></td></tr>
+              <tr><td><b style="color:#e85020">#2025-003</b></td><td>Mariana Souza Costa</td><td style="font-weight:700">R$ 67.200</td><td><span style="color:#1e8c50;font-weight:700">35%</span></td><td style="font-size:12px">À definir</td><td><span class="badge b-gray">Rascunho</span></td><td style="color:#aaa;font-size:12px">18/04/25</td><td><button class="btn btn-outline btn-sm" onclick="orcView('calc')">Abrir</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="orc-calc" style="display:none">
+        <div class="orc-frame">
+          <iframe src="orcamento.html"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROJETOS ══ -->
+    <div id="page-projetos" class="page">
+      <div class="toolbar">
+        <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Buscar projeto..."/></div>
+        <button class="btn btn-primary">+ Novo Projeto</button>
+        <button class="btn btn-outline">📅 Cronograma</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Projeto</th><th>Cliente</th><th>Valor Total</th><th>Etapa Atual</th><th>Prazo</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="font-weight:600;color:#1a1a14">Cozinha + Sala — Ap. 72</div><div style="font-size:11px;color:#aaa">PROJ-2025-001</div></td>
+              <td>Ana Paula Ribeiro</td><td style="font-weight:700">R$ 48.500</td>
+              <td><span class="badge b-blue">Produção</span></td>
+              <td style="font-size:12px;color:#1e8c50;font-weight:600">30/05/2025</td>
+              <td><span class="badge b-green">Em dia</span></td>
+              <td><button class="btn btn-outline btn-sm">Ver</button></td>
+            </tr>
+            <tr>
+              <td><div style="font-weight:600;color:#1a1a14">Home Office + Dormitório</div><div style="font-size:11px;color:#aaa">PROJ-2025-002</div></td>
+              <td>Carlos Eduardo Lima</td><td style="font-weight:700">R$ 32.000</td>
+              <td><span class="badge b-amber">Medição</span></td>
+              <td style="font-size:12px;color:#e85020;font-weight:600">10/05/2025</td>
+              <td><span class="badge b-amber">Atenção</span></td>
+              <td><button class="btn btn-outline btn-sm">Ver</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ CRONOGRAMA GERAL ══ -->
+    <div id="page-cronograma" class="page">
+      <div class="placeholder-wrap">
+        <div class="placeholder-icon">📅</div>
+        <div class="placeholder-title">Cronograma Geral</div>
+        <div class="placeholder-desc">Visão Gantt de todos os projetos com etapas, prazos e alertas de atraso. Em desenvolvimento na Fase 2.</div>
+        <span class="badge b-amber" style="padding:8px 18px;font-size:12px">Em desenvolvimento — Fase 2</span>
+      </div>
+    </div>
+
+    <!-- ══ PRODUÇÃO ══ -->
+    <div id="page-producao" class="page">
+      <div class="placeholder-wrap">
+        <div class="placeholder-icon">🏭</div>
+        <div class="placeholder-title">Produção</div>
+        <div class="placeholder-desc">Controle do cronograma de fábrica por projeto, ambientes e peças, com responsáveis e status. Em desenvolvimento na Fase 2.</div>
+        <span class="badge b-amber" style="padding:8px 18px;font-size:12px">Em desenvolvimento — Fase 2</span>
+      </div>
+    </div>
+
+    <!-- ══ MONTAGEM ══ -->
+    <div id="page-montagem" class="page">
+      <div class="toolbar">
+        <button class="btn btn-primary">+ Agendar Montagem</button>
+        <button class="btn btn-outline">📅 Ver Agenda</button>
+      </div>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-hdr">
+            <div class="team-title">🔧 Equipe 1</div>
+            <span class="badge b-green">2 ativas</span>
+          </div>
+          <div class="team-body">
+            <div class="job-card">
+              <div class="job-name">Ana Paula Ribeiro</div>
+              <div class="job-info">Cozinha + Sala · Rua das Flores, 120 — SP</div>
+              <div class="job-foot">
+                <span class="status-dot" style="color:#1e8c50">● Em montagem</span>
+                <span style="font-size:11px;color:#aaa">Hoje 08:00–18:00</span>
+              </div>
+            </div>
+            <div class="job-card">
+              <div class="job-name">Roberto Mendes</div>
+              <div class="job-info">Dormitório Master · Av. Brasil, 500 — SP</div>
+              <div class="job-foot">
+                <span class="status-dot" style="color:#c07820">● Agendado</span>
+                <span style="font-size:11px;color:#aaa">Amanhã 08:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-hdr">
+            <div class="team-title">🔧 Equipe 2</div>
+            <span class="badge b-amber">1 ativa</span>
+          </div>
+          <div class="team-body">
+            <div class="job-card">
+              <div class="job-name">Marcos Oliveira</div>
+              <div class="job-info">Home Office · R. das Palmeiras, 88 — SP</div>
+              <div class="job-foot">
+                <span class="status-dot" style="color:#1e8c50">● Em montagem</span>
+                <span style="font-size:11px;color:#aaa">Hoje 09:00–17:00</span>
+              </div>
+            </div>
+            <div class="empty-slot">Sem próxima montagem agendada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MANUTENÇÃO ══ -->
+    <div id="page-manutencao" class="page">
+      <div class="toolbar">
+        <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Buscar OS por cliente ou número..."/></div>
+        <button class="btn btn-primary" onclick="abrirModal('modal-os')">+ Nova OS</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nº OS</th><th>Cliente</th><th>Descrição</th><th>Valor</th><th>Agendado</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><b style="color:#e85020">OS-2025-001</b></td><td>Ana Paula Ribeiro</td><td>Ajuste de dobradiça — Cozinha</td><td style="font-weight:600">R$ 280</td><td style="font-size:12px;color:#aaa">22/04/2025</td><td><span class="badge b-green">Concluído</span></td><td><button class="btn btn-outline btn-sm">Ver OS</button></td></tr>
+            <tr><td><b style="color:#e85020">OS-2025-002</b></td><td>Mariana Souza</td><td>Troca de corrediça — Dormitório</td><td style="font-weight:600">R$ 450</td><td style="font-size:12px;color:#e85020">25/04/2025</td><td><span class="badge b-amber">Agendado</span></td><td><button class="btn btn-outline btn-sm">Ver OS</button></td></tr>
+            <tr><td><b style="color:#e85020">OS-2025-003</b></td><td>Roberto Mendes</td><td>Regulagem de gavetas</td><td style="font-weight:600">R$ 180</td><td style="font-size:12px;color:#aaa">28/04/2025</td><td><span class="badge b-gray">Pendente</span></td><td><button class="btn btn-outline btn-sm">Ver OS</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ PÓS-VENDAS ══ -->
+    <div id="page-posvendas" class="page">
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi-card"><div class="kpi-label">NPS Médio</div><div class="kpi-value" style="color:#1e8c50">8.4</div><div class="kpi-change up">Promotores: 72%</div></div>
+        <div class="kpi-card"><div class="kpi-label">Retornos Pendentes</div><div class="kpi-value">6</div><div class="kpi-change warn">⚠ 2 atrasados</div></div>
+        <div class="kpi-card"><div class="kpi-label">Pesquisas Enviadas</div><div class="kpi-value">34</div><div class="kpi-change up">89% respondidas</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Cliente</th><th>Projeto</th><th>NPS</th><th>Satisfação</th><th>Próx. Retorno</th><th>Ocorrências</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600">Ana Paula Ribeiro</td>
+              <td style="font-size:12px;color:#aaa">Cozinha + Sala</td>
+              <td><span style="font-size:18px;font-weight:700;color:#1e8c50">9</span></td>
+              <td><span class="badge b-green">Muito satisfeita</span></td>
+              <td style="font-size:12px;color:#aaa">30/05/2025</td>
+              <td style="font-size:12px;color:#aaa">Nenhuma</td>
+              <td><span class="badge b-green">OK</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:600">Marcos Oliveira</td>
+              <td style="font-size:12px;color:#aaa">Home Office</td>
+              <td><span style="font-size:18px;font-weight:700;color:#c07820">7</span></td>
+              <td><span class="badge b-amber">Satisfeito</span></td>
+              <td style="font-size:12px;color:#e85020;font-weight:600">Atrasado</td>
+              <td style="font-size:12px;color:#e85020">1 aberta</td>
+              <td><span class="badge b-red">Pendente</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ FINANCEIRO ══ -->
+    <div id="page-financeiro" class="page">
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Receita do Mês</div><div class="kpi-value">R$ 148k</div><div class="kpi-change up">↑ +12% vs anterior</div></div>
+        <div class="kpi-card"><div class="kpi-label">A Receber</div><div class="kpi-value">R$ 67k</div><div class="kpi-change warn">3 vencendo esta semana</div></div>
+        <div class="kpi-card"><div class="kpi-label">A Pagar</div><div class="kpi-value">R$ 42k</div><div class="kpi-change neutral">Vence dia 30</div></div>
+        <div class="kpi-card"><div class="kpi-label">Saldo em Caixa</div><div class="kpi-value" style="color:#1e8c50">R$ 89k</div><div class="kpi-change up">↑ Positivo</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-card">
+          <div class="form-card-title">🏦 Importar Extrato OFX</div>
+          <div style="border:2px dashed #e0dbd4;border-radius:9px;padding:28px;text-align:center;cursor:pointer" onclick="document.getElementById('ofx-inp').click()">
+            <div style="font-size:36px;margin-bottom:10px">🏦</div>
+            <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:5px">Arraste o arquivo .OFX aqui</div>
+            <div style="font-size:11px;color:#aaa;margin-bottom:14px">Compatível com todos os bancos brasileiros</div>
+            <button class="btn btn-outline btn-sm">Selecionar arquivo</button>
+            <input type="file" id="ofx-inp" accept=".ofx" style="display:none"/>
+          </div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-title">📊 DRE — Abril 2025</div>
+          <div style="display:flex;flex-direction:column;gap:0">
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f0ec"><span style="font-size:13px;color:#555">Receita Bruta</span><span style="font-size:13px;font-weight:700">R$ 148.000</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f0ec"><span style="font-size:13px;color:#555">Custos de Produção</span><span style="font-size:13px;font-weight:600;color:#e85020">− R$ 68.000</span></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f0ec"><span style="font-size:13px;color:#555">Despesas Operacionais</span><span style="font-size:13px;font-weight:600;color:#e85020">− R$ 22.000</span></div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid #1a1a14;margin-top:2px"><span style="font-size:14px;font-weight:700">Lucro Líquido</span><span style="font-size:15px;font-weight:700;color:#1e8c50">R$ 58.000 · 39%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CONFIGURAÇÕES ══ -->
+    <div id="page-config" class="page">
+      <div class="form-card">
+        <div class="form-card-title">🏢 Dados da Empresa</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="lbl">Nome da Empresa</label><input class="inp" type="text" value="Puro Design"/></div>
+          <div class="form-group"><label class="lbl">Slogan / Descrição</label><input class="inp" type="text" value="Mobili di Stile"/></div>
+          <div class="form-group"><label class="lbl">CNPJ</label><input class="inp" type="text" placeholder="00.000.000/0001-00"/></div>
+          <div class="form-group"><label class="lbl">Telefone</label><input class="inp" type="text" placeholder="(11) 99999-0000"/></div>
+          <div class="form-group full"><label class="lbl">Endereço</label><input class="inp" type="text" placeholder="Rua, número, bairro, cidade — UF"/></div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-card-title">🎨 Identidade Visual</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="lbl">Cor Principal</label><div style="display:flex;gap:8px"><input class="inp" type="color" value="#e85020" style="width:48px;padding:4px;cursor:pointer"/><input class="inp" type="text" value="#e85020"/></div></div>
+          <div class="form-group"><label class="lbl">Logo da Empresa</label><input class="inp" type="file" accept="image/*"/></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-primary" onclick="toast('✓ Configurações salvas com sucesso!')">Salvar Configurações</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODAL CLIENTE ═══ -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Novo Cliente</div>
+      <button class="modal-close" onclick="fecharModal('modal-cliente')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-group full"><label class="lbl">Nome Completo *</label><input class="inp" type="text" placeholder="Nome do cliente"/></div>
+        <div class="form-group"><label class="lbl">CPF / CNPJ</label><input class="inp" type="text" placeholder="000.000.000-00"/></div>
+        <div class="form-group"><label class="lbl">Telefone / WhatsApp *</label><input class="inp" type="text" placeholder="(11) 99999-0000"/></div>
+        <div class="form-group full"><label class="lbl">E-mail</label><input class="inp" type="email" placeholder="cliente@email.com"/></div>
+        <div class="form-group"><label class="lbl">CEP</label><input class="inp" type="text" placeholder="00000-000"/></div>
+        <div class="form-group"><label class="lbl">Cidade / UF</label><input class="inp" type="text" placeholder="São Paulo, SP"/></div>
+        <div class="form-group full"><label class="lbl">Endereço Completo</label><input class="inp" type="text" placeholder="Rua, número, complemento, bairro"/></div>
+        <div class="form-group full"><label class="lbl">Observações</label><textarea class="inp" placeholder="Informações relevantes sobre o cliente..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="fecharModal('modal-cliente');toast('✓ Cliente cadastrado!')">Salvar Cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL OS ═══ -->
+<div class="modal-overlay" id="modal-os">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Nova Ordem de Serviço</div>
+      <button class="modal-close" onclick="fecharModal('modal-os')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="lbl">Cliente *</label><select class="inp"><option value="">Selecionar cliente...</option><option>Ana Paula Ribeiro</option><option>Carlos Eduardo Lima</option><option>Mariana Souza Costa</option></select></div>
+        <div class="form-group full"><label class="lbl">Descrição do Problema *</label><textarea class="inp" placeholder="Descreva o problema ou serviço solicitado..."></textarea></div>
+        <div class="form-group"><label class="lbl">Tipo de OS</label><select class="inp"><option>Garantia</option><option>Manutenção preventiva</option><option>Reparo pago</option><option>Regulagem</option></select></div>
+        <div class="form-group"><label class="lbl">Data de Agendamento</label><input class="inp" type="date"/></div>
+        <div class="form-group"><label class="lbl">Valor Estimado (R$)</label><input class="inp" type="text" placeholder="0,00"/></div>
+        <div class="form-group"><label class="lbl">Responsável</label><select class="inp"><option>Equipe 1</option><option>Equipe 2</option><option>Técnico externo</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="fecharModal('modal-os')">Cancelar</button>
+      <button class="btn btn-primary" onclick="fecharModal('modal-os');toast('✓ OS criada com sucesso!')">Criar OS</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+const meta = {
+  dashboard:  {bc:'SISTEMA · INÍCIO',     title:'Dashboard',       sub:'Visão geral de todos os módulos e indicadores'},
+  clientes:   {bc:'MÓDULOS · 01',         title:'Clientes',        sub:'Cadastro e gestão completa de clientes'},
+  orcamentos: {bc:'MÓDULOS · 02',         title:'Orçamentos',      sub:'Criar, gerenciar e aprovar propostas comerciais'},
+  projetos:   {bc:'MÓDULOS · 03',         title:'Projetos',        sub:'Controle completo de projetos em andamento'},
+  cronograma: {bc:'MÓDULOS · 04',         title:'Cronograma Geral',sub:'Prazos e etapas de todos os projetos'},
+  producao:   {bc:'MÓDULOS · 05',         title:'Produção',        sub:'Cronograma de fábrica e status de peças'},
+  montagem:   {bc:'MÓDULOS · 06',         title:'Montagem',        sub:'Equipe 1 e Equipe 2 — montagens em andamento'},
+  manutencao: {bc:'MÓDULOS · 07',         title:'Manutenção',      sub:'Ordens de serviço e atendimentos técnicos'},
+  posvendas:  {bc:'MÓDULOS · 08',         title:'Pós-vendas',      sub:'NPS, satisfação e retornos agendados'},
+  financeiro: {bc:'MÓDULOS · 09',         title:'Financeiro',      sub:'Fluxo de caixa, DRE e importação de extrato OFX'},
+  config:     {bc:'SISTEMA · CONFIGURAÇÕES',title:'Configurações', sub:'Dados da empresa, identidade visual e preferências'},
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + name);
+  const nv = document.getElementById('nav-' + name);
+  if (pg) pg.classList.add('active');
+  if (nv) nv.classList.add('active');
+  const m = meta[name] || {};
+  document.getElementById('hdr-bc').textContent    = m.bc    || '';
+  document.getElementById('hdr-title').textContent = m.title || '';
+  document.getElementById('hdr-sub').textContent   = m.sub   || '';
+}
+
+function orcView(v) {
+  const lista = document.getElementById('orc-lista');
+  const calc  = document.getElementById('orc-calc');
+  const tL    = document.getElementById('orc-tab-lista');
+  const tC    = document.getElementById('orc-tab-calc');
+  if (v === 'lista') {
+    lista.style.display = 'block'; calc.style.display = 'none';
+    tL.classList.add('active'); tC.classList.remove('active');
+  } else {
+    lista.style.display = 'none'; calc.style.display = 'block';
+    tC.classList.add('active'); tL.classList.remove('active');
+  }
+}
+
+function abrirModal(id) { document.getElementById(id).classList.add('open'); }
+function fecharModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg) {
+  const el = document.getElementById('toast-el');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
